@@ -3,6 +3,7 @@ module ZipList.Nonempty exposing
     , fromList, singleton
     , current, toList, length
     , forward, backward
+    , fromNonEmptyList, toNonEmptyList
     )
 
 {-| A `ZipList` is a collection which can be moved forward/backward and that exposes a single current element
@@ -31,6 +32,7 @@ Copied from <https://package.elm-lang.org/packages/Guid75/ziplist/1.0.1> and mod
 
 -}
 
+import List.Nonempty
 import Maybe
 
 
@@ -50,6 +52,11 @@ fromList list =
 
         head :: queue ->
             Just <| Zipper [] head queue
+
+
+fromNonEmptyList : List.Nonempty.Nonempty a -> ZipList a
+fromNonEmptyList (List.Nonempty.Nonempty head tail) =
+    Zipper [] head tail
 
 
 {-| Create a new ZipList with a single element in it
@@ -99,6 +106,22 @@ toList (Zipper before elem after) =
         , [ elem ]
         , after
         ]
+
+
+toNonEmptyList : ZipList a -> List.Nonempty.Nonempty a
+toNonEmptyList (Zipper before elem after) =
+    let
+        nonempty =
+            List.Nonempty.fromElement elem
+
+        withAfter =
+            List.foldl List.Nonempty.cons nonempty after
+                |> List.Nonempty.reverse
+
+        withBefore =
+            List.foldl List.Nonempty.cons withAfter before
+    in
+    withBefore
 
 
 {-| Return a `ZipList` length

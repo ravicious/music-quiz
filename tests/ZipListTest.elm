@@ -1,7 +1,8 @@
 module ZipListTest exposing (suite)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
+import Fuzz exposing (Fuzzer, int, intRange, list, string)
+import List.Nonempty
 import Test exposing (..)
 import ZipList.Nonempty as ZipList exposing (ZipList)
 
@@ -13,6 +14,18 @@ suite =
             wrapListFuzz <|
                 \randomList zipList ->
                     Expect.equal randomList <| ZipList.toList zipList
+        , fuzz2 (list int) (intRange 0 20) "The fromNonemptyList function" <|
+            \randomList n ->
+                case List.Nonempty.fromList randomList of
+                    Just nonEmptyList ->
+                        nonEmptyList
+                            |> ZipList.fromNonEmptyList
+                            |> applyNTimes n ZipList.forward
+                            |> ZipList.toNonEmptyList
+                            |> Expect.equal nonEmptyList
+
+                    Nothing ->
+                        Expect.pass
         , describe "The singleton function"
             [ test "A singleton should have a length of 1" <|
                 \_ ->
@@ -78,3 +91,17 @@ wrapListFuzz f randomList =
 
             Nothing ->
                 Expect.fail "ZipList.Nonempty.fromList returned Nothing given a non-empty list"
+
+
+applyNTimes : Int -> (a -> a) -> a -> a
+applyNTimes n f x =
+    if n < 1 then
+        x
+
+    else
+        case n of
+            1 ->
+                f x
+
+            _ ->
+                applyNTimes (n - 1) f (f x)
