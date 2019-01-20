@@ -19,9 +19,9 @@ suite =
                 case List.Nonempty.fromList randomList of
                     Just nonEmptyList ->
                         nonEmptyList
-                            |> ZipList.fromNonEmptyList
+                            |> ZipList.fromNonemptyList
                             |> applyNTimes n ZipList.forward
-                            |> ZipList.toNonEmptyList
+                            |> ZipList.toNonemptyList
                             |> Expect.equal nonEmptyList
 
                     Nothing ->
